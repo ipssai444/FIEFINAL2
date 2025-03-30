@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask AI - Crop Veda</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        /* Custom styles for the Ask AI page */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa; /* Light background color */
+        }
+
+        .navbar {
+            background-color: #28a745; /* Green navbar */
+        }
+
+        .navbar-brand {
+            color: #fff !important; /* White text for the brand */
+        }
+
+        .nav-link {
+            color: #fff !important; /* White text for the links */
+        }
+
+        .chat-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+
+        .chat-box {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .chat-input button {
+            padding: 10px 20px;
+            background-color: #28a745; /* Green button color */
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease; /* Smooth hover effect */
+        }
+
+        .chat-input button:hover {
+            background-color: #218838; /* Darker green on hover */
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 70%;
+        }
+
+        .user-message {
+            background-color: #e2f0ff; /* Light blue for user messages */
+            text-align: right;
+            margin-left: auto;
+        }
+
+        .bot-message {
+            background-color: #f1f1f1; /* Light gray for bot messages */
+            text-align: left;
+            margin-right: auto;
+        }
+
+        .message-timestamp {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Improved formatting for bot responses */
+        .bot-message ul {
+            list-style-type: disc; /* Bullet points */
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .bot-message p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .bot-message strong {
+            color: #28a745; /* Green color for headings */
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">CROP VEDA</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('farmer_logout') }}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <h1 class="text-center mb-4">CHATBOT</h1>
+        <div class="chat-box" id="chat-box">
+            <!-- Chat messages will appear here -->
+            <div class="message bot-message">
+                <p>Hello! How can I assist you with farming-related queries today?</p>
+                <div class="message-timestamp">10:00 AM</div>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS for Chatbot -->
+    <script>
+        // DOM Elements
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Function to add a message to the chat box
+        function addMessage(message, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', isUser ? 'user-message' : 'bot-message');
+
+            // Format bot responses with better UI
+            if (!isUser) {
+                // Replace **text** with <strong>text</strong> for bold formatting
+                message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                // Replace newlines with <br> for line breaks
+                message = message.replace(/\n/g, '<br>');
+                // Replace bullet points with <ul> and <li>
+                message = message.replace(/\*\s(.*?)(<br>|$)/g, '<li>$1</li>');
+                message = message.replace(/<li>.*<\/li>/g, '<ul>$&</ul>');
+            }
+
+            messageDiv.innerHTML = `
+                <p>${message}</p>
+                <div class="message-timestamp">${new Date().toLocaleTimeString()}</div>
+            `;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+        }
+
+        // Function to send a message to the Flask backend
+        async function sendMessage() {
+            const userMessage = userInput.value.trim();
+            if (!userMessage) return; // Do nothing if the input is empty
+
+            // Add the user's message to the chat box
+            addMessage(userMessage, true);
+
+            // Clear the input field
+            userInput.value = '';
+
+            try {
+                // Send the user's message to the Flask backend
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: userMessage,
+                    }),
+                });
+
+                const data = await response.json();
+
+                // Add the bot's response to the chat box
+                addMessage(data.response, false);
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('Sorry, something went wrong. Please try again.', false);
+            }
+        }
+
+        // Event listener for the Send button
+        sendBtn.addEventListener('click', sendMessage);
+
+        // Event listener for the Enter key
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

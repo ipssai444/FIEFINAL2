@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .password-toggle {
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .password-requirements {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .requirement {
+            color: red;
+        }
+        .requirement.valid {
+            color: green;
+        }
+        .popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-center">Farmer Registration</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Flash Messages -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    {% if category == 'success' %}
+                                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                                        <script>
+                                            // Show popup for 2 seconds and then redirect
+                                            setTimeout(function() {
+                                                window.location.href = "{{ url_for('farmer_login') }}";
+                                            }, 2000);
+                                        </script>
+                                    {% elif category == 'error' %}
+                                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form action="{{ url_for('farmer_register') }}" method="POST" onsubmit="return validatePassword()">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="form-group position-relative">
+                                <label for="password">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <span class="password-toggle" onclick="togglePassword('password')">👁️</span>
+                                <div class="password-requirements">
+                                    <p>Password must meet the following requirements:</p>
+                                    <ul>
+                                        <li id="length" class="requirement">At least 8 characters</li>
+                                        <li id="uppercase" class="requirement">At least one uppercase letter</li>
+                                        <li id="lowercase" class="requirement">At least one lowercase letter</li>
+                                        <li id="digit" class="requirement">At least one digit</li>
+                                        <li id="special" class="requirement">At least one special character</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="form-group position-relative">
+                                <label for="confirm_password">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                <span class="password-toggle" onclick="togglePassword('confirm_password')">👁️</span>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-block">Register</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Function to toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+            } else {
+                input.type = "password";
+            }
+        }
+
+        // Function to validate password strength
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+
+            // Password requirements
+            const hasLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasLowercase = /[a-z]/.test(password);
+            const hasDigit = /\d/.test(password);
+            const hasSpecial = /[!@#$%^&*]/.test(password);
+
+            // Update requirement indicators
+            document.getElementById('length').classList.toggle('valid', hasLength);
+            document.getElementById('uppercase').classList.toggle('valid', hasUppercase);
+            document.getElementById('lowercase').classList.toggle('valid', hasLowercase);
+            document.getElementById('digit').classList.toggle('valid', hasDigit);
+            document.getElementById('special').classList.toggle('valid', hasSpecial);
+
+            // Check if all requirements are met
+            if (!hasLength || !hasUppercase || !hasLowercase || !hasDigit || !hasSpecial) {
+                alert('Password does not meet the requirements.');
+                return false;
+            }
+
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                alert('Passwords do not match.');
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</body>
+</html>

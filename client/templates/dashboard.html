@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CROP VEDA</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        /* Custom styles for the dashboard page */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url("{{ url_for('static', filename='images/dashboard-bg.png') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background-color: #28a745;
+        }
+
+        .navbar-brand {
+            color: #fff !important;
+        }
+
+        .nav-link {
+            color: #fff !important;
+        }
+
+        .dashboard-container {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-heading {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .card {
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background-color: #fff;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        /* Vertical layout for Crop Guidance options */
+        .crop-guidance-options {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 10px; /* Space between buttons */
+            margin-top: 10px; /* Space below the main button */
+        }
+
+        .crop-guidance-options .btn {
+            width: 100%; /* Full width buttons */
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">CROP VEDA</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('farmer_logout') }}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-container">
+        <h1 class="dashboard-heading">Farmer Dashboard</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">CROP GUIDANCE</h5>
+                        <p class="card-text">Get expert guidance for crop cultivation and management.</p>
+                        <!-- Main button to toggle Crop Guidance options -->
+                        <button id="crop-guidance-toggle" class="btn btn-success w-100">Go to Crop Guidance</button>
+                        <!-- Vertical layout for Crop Guidance options -->
+                        <div id="crop-guidance-options" class="crop-guidance-options">
+                            <a href="{{ url_for('organic_guidance') }}" class="btn btn-success">Organic Cultivation Guidance</a>
+                            <a href="{{ url_for('yield_optimization') }}" class="btn btn-success">Crop Yield Optimization</a>
+                            <a href="{{ url_for('disease_detection') }}" class="btn btn-success">Disease Detection</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">FARMER MERCHANT PLACE</h5>
+                        <p class="card-text">Submit applications to sell your crops to merchants.</p>
+                        <a href="{{ url_for('farmer_merchant') }}" class="btn btn-success">Go to Merchant Place</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">AI ASSISTANCE</h5>
+                        <p class="card-text">Get instant help from AI for farming-related queries.</p>
+                        <a href="{{ url_for('ask_ai') }}" class="btn btn-success">ASK AI</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const cropGuidanceToggle = document.getElementById('crop-guidance-toggle');
+            const cropGuidanceOptions = document.getElementById('crop-guidance-options');
+
+            if (cropGuidanceToggle) {
+                cropGuidanceToggle.addEventListener('click', function () {
+                    // Toggle visibility of the Crop Guidance options
+                    if (cropGuidanceOptions.style.display === 'none' || cropGuidanceOptions.style.display === '') {
+                        cropGuidanceOptions.style.display = 'flex';
+                        cropGuidanceToggle.textContent = 'Hide Crop Guidance';
+                    } else {
+                        cropGuidanceOptions.style.display = 'none';
+                        cropGuidanceToggle.textContent = 'Go to Crop Guidance';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
